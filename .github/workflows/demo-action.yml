@@ -15,21 +15,49 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  cache-hit:
-    # The type of runner that the job will run on
+  populate-cache:
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-      
+      - uses: actions/checkout@v4
+
+      - name: Information on prepopulating cache
+        run: |
+          echo "This makes sure the cache has something in it before running the cache-hit test."
+          echo "The same key is used in the prepopulate-cache job as in the cache-hit job."
+
       - name: Cache Container Images
         id: cache-container-images
         uses: jamesmortensen/cache-container-images-action@de9e1ef6907f913f2a7a3deb47109eaf9fb2865f
         with:
           runtime: podman
+          prefix-key: 'podman-cache-hit ${{ github.run_id }}'
+          images: |
+            selenium/node-chrome:4.1.2-20220130
+            selenium/hub:4.1.2-20220130
+
+  # This workflow contains a single job called "build"
+  cache-hit:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    needs: prepopulate-cache
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+      
+      - name: Information on cache-hit test
+        run: |
+          echo "Attempt to pull images using same key used in prepopulate-cache."
+          echo "Since something is in the cache, we expect this test to pass with a cache HIT."
+
+      - name: Cache Container Images
+        id: cache-container-images
+        uses: jamesmortensen/cache-container-images-action@de9e1ef6907f913f2a7a3deb47109eaf9fb2865f
+        with:
+          runtime: podman
+          prefix-key: 'podman-cache-hit ${{ github.run_id }}'
           images: |
             selenium/node-chrome:4.1.2-20220130
             selenium/hub:4.1.2-20220130
@@ -44,12 +72,14 @@ jobs:
       - name: Run this only if there is a cache hit
         if: ${{ steps.cache-container-images.outputs.cache-hit == 'true' }}
         shell: bash
-        run: echo "Container images are found in the cache"
+        run: echo "Container images are found in the cache. Test passes!"
 
       - name: Run this only if there is a cache miss
         if: ${{ steps.cache-container-images.outputs.cache-hit != 'true' }}
         shell: bash
-        run: echo "Container images are not found in the cache!"
+        run: |
+          echo "Container images are not found in the cache! Test FAILS!"
+          exit 1
 
       - name: Start and stop container with podman
         shell: bash
@@ -70,13 +100,18 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-      
+      - uses: actions/checkout@v4
+
+      - name: Information on cache-miss test
+        run: |
+          echo "Attempt to pull images using randomized key."
+          echo "Nothing should be in the cache, we expect this test to pass with a cache MISS."
+
       - name: Cache Container Images
         id: cache-container-images
         uses: jamesmortensen/cache-container-images-action@de9e1ef6907f913f2a7a3deb47109eaf9fb2865f
         with:
-          prefix-key: 'podman-cache ${{ github.run_id }}'
+          prefix-key: 'podman-cache-miss ${{ github.run_id }}'
           images: |
             selenium/node-chrome:latest
             selenium/hub:latest
@@ -91,12 +126,14 @@ jobs:
       - name: Run this only if there is a cache hit
         if: ${{ steps.cache-container-images.outputs.cache-hit == 'true' }}
         shell: bash
-        run: echo "Container images are found in the cache"
+        run: |
+          echo "Container images are found in the cache! Test FAILS!"
+          exit 1
 
       - name: Run this only if there is a cache miss
         if: ${{ steps.cache-container-images.outputs.cache-hit != 'true' }}
         shell: bash
-        run: echo "Container images are not found in the cache!"
+        run: echo "Container images are not found in the cache. Test passes!"
 
       - name: Start and stop container with podman
         shell: bash
@@ -108,4 +145,3 @@ jobs:
           echo After running podman run...
           podman stop --cidfile cid-node
           podman stop --cidfile cid-hub
-
