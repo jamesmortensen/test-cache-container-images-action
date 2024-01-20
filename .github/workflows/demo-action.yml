@@ -29,7 +29,7 @@ jobs:
       - name: Cache Container Images
         id: cache-container-images
         # uses: jamesmortensen/cache-container-images-action@de9e1ef6907f913f2a7a3deb47109eaf9fb2865f
-        uses: Borda/GHA_cache-container-images@8f3737d43d0e409a75b0d25df85024cc1f920602
+        uses: Borda/GHA_cache-container-images@action/Checkout
         with:
           runtime: podman
           prefix-key: 'podman-cache-hit ${{ github.run_id }}'
@@ -56,7 +56,7 @@ jobs:
       - name: Cache Container Images
         id: cache-container-images
         # uses: jamesmortensen/cache-container-images-action@de9e1ef6907f913f2a7a3deb47109eaf9fb2865f
-        uses: Borda/GHA_cache-container-images@8f3737d43d0e409a75b0d25df85024cc1f920602
+        uses: Borda/GHA_cache-container-images@action/Checkout
         with:
           runtime: podman
           prefix-key: 'podman-cache-hit ${{ github.run_id }}'
@@ -111,7 +111,7 @@ jobs:
 
       - name: Cache Container Images
         id: cache-container-images
-        uses: Borda/GHA_cache-container-images@8f3737d43d0e409a75b0d25df85024cc1f920602
+        uses: Borda/GHA_cache-container-images@action/Checkout
         # uses: jamesmortensen/cache-container-images-action@de9e1ef6907f913f2a7a3deb47109eaf9fb2865f
         with:
           prefix-key: 'podman-cache-miss ${{ github.run_id }}'
