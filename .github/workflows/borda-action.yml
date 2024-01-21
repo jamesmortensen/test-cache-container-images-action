@@ -36,3 +36,16 @@ jobs:
           prefix-key: 'cypress-included_master'
           images: |
             cypress/included:12.17.1
+
+  reproduce_issue_2_fix_go_script_path:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache Container Images
+        uses: jamesmortensen/cache-container-images-action@fix_go_script_path  # latest master
+        with:
+          prefix-key: 'cypress-included_fix_go_script_path'
+          images: |
+            cypress/included:12.17.1
+            
