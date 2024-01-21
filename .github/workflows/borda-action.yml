@@ -1,0 +1,38 @@
+name: Reproduce Issue 2
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  reproduce_issue_2_v1:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache Container Images
+        uses: jamesmortensen/cache-container-images-action@de9e1ef6907f913f2a7a3deb47109eaf9fb2865f  # v1
+        with:
+          prefix-key: 'cypress-included_v1'
+          images: |
+            cypress/included:12.17.1
+
+  reproduce_issue_2_master:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache Container Images
+        uses: jamesmortensen/cache-container-images-action@master  # latest master
+        with:
+          prefix-key: 'cypress-included_master'
+          images: |
+            cypress/included:12.17.1
